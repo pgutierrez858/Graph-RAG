@@ -56,7 +56,7 @@ class OllamaClient:
     ) -> T:
         """
         Fuerza al modelo a devolver un objeto basado en un esquema de Pydantic.
-        Ideal para Entity Extraction y Entity Resolution.
+        Útil para Entity Extraction y Entity Resolution.
         """
         messages = [
             {'role': 'system', 'content': system_prompt},
@@ -74,6 +74,27 @@ class OllamaClient:
         # Esto previene los KeyErrors
         return schema.model_validate_json(response_content)
 
+    def structured_output_with_chat(
+            self,
+            messages: List[Dict[str, str]],
+            schema: Type[T],
+            model: str = None,
+            temperature: float = 0.0
+    ) -> T:
+        """
+        Genera output estructurado sobre un esquema de Pydantic, pero permite mantener un contexto
+        de la conversación hasta el momento.
+        """
+        response_content = self.chat(
+            messages=messages,
+            model=model,
+            temperature=temperature,
+            format=schema.model_json_schema()
+        )
+
+        # Validates the response string and returns the Pydantic instance
+        return schema.model_validate_json(response_content)
+
     def embed(self, texts: List[str], model: str = None) -> List[List[float]]:
         """Genera embeddings usando Ollama."""
         model = model or self.settings.ollama_embedding_model
@@ -82,3 +103,26 @@ class OllamaClient:
             response = self.client.embeddings(model=model, prompt=text)
             embeddings.append(response['embedding'])
         return embeddings
+
+    @staticmethod
+    def extract_json(response: str) -> Dict[str, Any]:
+        """Extrae JSON de la respuesta."""
+        try:
+            # Intenta parsear directamente
+            return json.loads(response)
+        except json.JSONDecodeError:
+            # Busca bloques de código JSON
+            start = response.find('```json')
+            if start != -1:
+                start = response.find('\n', start) + 1
+                end = response.find('```', start)
+                if end != -1:
+                    return json.loads(response[start:end].strip())
+
+            # Busca objetos JSON
+            start = response.find('{')
+            end = response.rfind('}')
+            if start != -1 and end != -1:
+                return json.loads(response[start:end + 1])
+
+            raise ValueError("No se pudo extraer JSON de la respuesta")

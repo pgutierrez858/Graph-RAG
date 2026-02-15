@@ -3,37 +3,6 @@ from typing import List, Dict, Any, Optional
 from ..config import get_settings
 
 
-def format_schema(schema: Dict[str, Any]) -> str:
-    """Formatea el schema para el prompt."""
-
-    def format_props(props):
-        return ", ".join([f"{p['property']}: {p['type']}" for p in props])
-
-    formatted_node_props = [
-        f"{label} {{{format_props(props)}}}"
-        for label, props in schema["node_props"].items()
-    ]
-
-    formatted_rel_props = [
-        f"{rel_type} {{{format_props(props)}}}"
-        for rel_type, props in schema["rel_props"].items()
-    ]
-
-    formatted_rels = [
-        f"(:{rel['start']})-[:{rel['type']}]->(:{rel['end']})"
-        for rel in schema["relationships"]
-    ]
-
-    return "\n".join([
-        "Node labels and properties:",
-        "\n".join(formatted_node_props),
-        "\nRelationship types and properties:",
-        "\n".join(formatted_rel_props),
-        "\nThe relationships:",
-        "\n".join(formatted_rels),
-    ])
-
-
 class Neo4jManager:
     def __init__(self):
         settings = get_settings()
@@ -125,4 +94,33 @@ class Neo4jManager:
             print(f"Error obteniendo schema: {e}")
             return {"node_props": {}, "rel_props": {}, "relationships": []}
 
-    
+    @staticmethod
+    def format_schema(schema: Dict[str, Any]) -> str:
+        """Formatea el schema para el prompt."""
+
+        def format_props(props):
+            return ", ".join([f"{p['property']}: {p['type']}" for p in props])
+
+        formatted_node_props = [
+            f"{label} {{{format_props(props)}}}"
+            for label, props in schema["node_props"].items()
+        ]
+
+        formatted_rel_props = [
+            f"{rel_type} {{{format_props(props)}}}"
+            for rel_type, props in schema["rel_props"].items()
+        ]
+
+        formatted_rels = [
+            f"(:{rel['start']})-[:{rel['type']}]->(:{rel['end']})"
+            for rel in schema["relationships"]
+        ]
+
+        return "\n".join([
+            "Node labels and properties:",
+            "\n".join(formatted_node_props),
+            "\nRelationship types and properties:",
+            "\n".join(formatted_rel_props),
+            "\nThe relationships:",
+            "\n".join(formatted_rels),
+        ])
