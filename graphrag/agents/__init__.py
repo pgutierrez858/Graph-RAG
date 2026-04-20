@@ -36,9 +36,33 @@ class AgenticRAG:
                 self.conversation_history
             )
 
+            # 2a. Greeting / out-of-scope: return the fixed response immediately
+            if "direct_response" in retrieval_result:
+                answer = retrieval_result["direct_response"]
+                iterations.append({
+                    "iteration": iteration + 1,
+                    "question": current_question,
+                    "retrieval": retrieval_result,
+                    "answer": answer,
+                    "critique": {"is_complete": True, "is_faithful": True, "missing_info": []},
+                })
+                break
+
             context = retrieval_result["context"]
 
-            # 2. Generar respuesta
+            # 2b. No context retrieved → don't hallucinate
+            if not context:
+                answer = "This information is not in the knowledge base."
+                iterations.append({
+                    "iteration": iteration + 1,
+                    "question": current_question,
+                    "retrieval": retrieval_result,
+                    "answer": answer,
+                    "critique": {"is_complete": False, "is_faithful": True, "missing_info": []},
+                })
+                break
+
+            # 2c. Generate answer from retrieved context
             answer = self._generate_answer(current_question, context)
 
             # 3. Criticar respuesta
@@ -85,20 +109,18 @@ class AgenticRAG:
         """Genera una respuesta usando el LLM."""
         context_str = "\n\n".join([f"[{i + 1}] {c}" for i, c in enumerate(context)])
 
-        system_prompt = """You are a helpful assistant that answers questions based on provided context.
+        system_prompt = """You are a concise question-answering assistant.
 
-Rules:
-1. Base your answer ONLY on the provided context
-2. If the context doesn't contain enough information, say so
-3. Cite the context by referencing the source numbers [1], [2], etc.
-4. Be concise but complete"""
+STRICT RULES — follow all of them:
+1. Answer ONLY from the provided context. Do not use prior knowledge.
+2. Start your reply with the answer itself. Never begin with "I", "Let me", "Based on", "The context", or any preamble.
+3. Do not explain your reasoning or thinking process. Only state facts.
+4. Keep the answer short: one or two sentences maximum.
+5. Add an inline citation after each fact, e.g. "Ulm, Germany [1]."
+6. If the context does not contain the answer, reply: "This information is not in the knowledge base."
+"""
 
-        user_message = f"""Context:
-{context_str}
-
-Question: {question}
-
-Answer:"""
+        user_message = f"Context:\n{context_str}\n\nQuestion: {question}"
 
         messages = [
             {"role": "system", "content": system_prompt},

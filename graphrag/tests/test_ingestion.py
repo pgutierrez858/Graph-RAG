@@ -3,6 +3,8 @@ from graphrag.graph.neo4j_manager import Neo4jManager
 from graphrag.ingestion.text_processor import TextProcessor
 from graphrag.ingestion.entity_extractor import EntityExtractor
 
+pytestmark = pytest.mark.integration
+
 
 @pytest.fixture
 def neo4j_manager():

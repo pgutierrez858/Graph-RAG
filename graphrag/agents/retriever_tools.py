@@ -23,9 +23,48 @@ class RetrieverTools:
             "description": description
         }
 
+    _GREETING_RESPONSE = (
+        "Hello! I am a knowledge assistant specialising in physicists and their "
+        "scientific contributions. You can ask me about people like Albert Einstein, "
+        "theories they developed, awards they "
+        "received, institutions they worked at, and locations they lived in."
+    )
+    _OUT_OF_SCOPE_RESPONSE = (
+        "This question is outside my scope. "
+        "I only answer questions about physicists and their scientific contributions."
+    )
+    _SKILLS_RESPONSE = (
+        "I can answer questions about physicists: theories they developed, awards they received, "
+        "institutions they worked at, and locations they lived in."
+    )
+
     def get_tool_descriptions(self) -> List[Dict[str, Any]]:
         """Obtiene las descripciones de todas las herramientas disponibles."""
         tools = [
+            {
+                "name": "greeting",
+                "description": (
+                    "Handle conversational messages that need no knowledge lookup: "
+                    "greetings, farewells, thanks, or questions about the system's capabilities."
+                ),
+                "parameters": {}
+            },
+            {
+                "name": "out_of_scope",
+                "description": (
+                    "Handle questions clearly unrelated to physicists and their scientific work "
+                    "(weather, sports, geography, entertainment, etc.)."
+                ),
+                "parameters": {}
+            },
+            {
+                "name": "skills",
+                "description": (
+                    "Describe the system's capabilities when asked about them. "
+                    "Should not be used for general questions about capabilities."
+                ),
+                "parameters": {}
+            },
             {
                 "name": "vector_search",
                 "description": "Search for relevant information using semantic similarity. Best for finding conceptually related content.",
@@ -61,6 +100,30 @@ class RetrieverTools:
 
     def execute_tool(self, tool_name: str, **kwargs) -> Dict[str, Any]:
         """Ejecuta una herramienta específica."""
+        if tool_name == "greeting":
+            return {
+                "tool": tool_name,
+                "results": [],
+                "context": [],
+                "direct_response": self._GREETING_RESPONSE,
+            }
+
+        if tool_name == "out_of_scope":
+            return {
+                "tool": tool_name,
+                "results": [],
+                "context": [],
+                "direct_response": self._OUT_OF_SCOPE_RESPONSE,
+            }
+
+        if tool_name == "skills":
+            return {
+                "tool": tool_name,
+                "results": [],
+                "context": [],
+                "direct_response": self._SKILLS_RESPONSE,
+            }
+        
         if tool_name == "vector_search":
             results = self.vector_retriever.retrieve(kwargs.get("query", ""))
             return {

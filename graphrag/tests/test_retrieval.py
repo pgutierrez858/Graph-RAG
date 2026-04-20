@@ -4,6 +4,8 @@ from graphrag.retrieval.vector_retriever import VectorRetriever, HybridRetriever
 from graphrag.retrieval.text2cypher import Text2CypherRetriever
 from graphrag.ingestion.text_processor import TextProcessor
 
+pytestmark = pytest.mark.integration
+
 
 @pytest.fixture
 def setup_database():

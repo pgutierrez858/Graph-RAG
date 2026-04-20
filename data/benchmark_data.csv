@@ -1,0 +1,39 @@
+question;cypher
+Hello;RETURN 'Hello! I am a knowledge assistant specialising in physicists and their scientific contributions. You can ask me about people like Albert Einstein, theories they developed, awards they received, institutions they worked at, and locations they lived in.' AS ground_truth
+What can you do?;RETURN 'I can answer questions about physicists: theories they developed, awards they received, institutions they worked at, publications they authored, and locations they lived in.' AS ground_truth
+Thank you, goodbye!;RETURN 'You are welcome. Goodbye!' AS ground_truth
+What is the weather like today?;RETURN 'This question is outside my scope. I only answer questions about physicists and their scientific contributions.' AS ground_truth
+Who won the last football World Cup?;RETURN 'This question is outside my scope. I only answer questions about physicists and their scientific contributions.' AS ground_truth
+What is the capital of France?;RETURN 'This question is outside my scope. I only answer questions about physicists and their scientific contributions.' AS ground_truth
+What is Einstein's middle name?;RETURN 'This information is not in the knowledge base.' AS ground_truth
+Who was Einstein's wife?;RETURN 'This information is not in the knowledge base.' AS ground_truth
+What is the population of Ulm, Germany?;RETURN 'This information is not in the knowledge base.' AS ground_truth
+Which movies did Einstein appear in?;RETURN 'This question is outside my scope. I only answer questions about physicists and their scientific contributions.' AS ground_truth
+What is Einstein's favourite food?;RETURN 'This information is not in the knowledge base.' AS ground_truth
+Where was Einstein born?;MATCH (p:Person)-[r:BORN_IN]->(l:Location) WHERE p.name CONTAINS 'Einstein' RETURN l.name + CASE WHEN r.year IS NOT NULL THEN ' (' + toString(r.year) + ')' ELSE '' END AS ground_truth ORDER BY size(l.name) DESC LIMIT 1
+What is Einstein's nationality?;RETURN 'German' AS ground_truth
+In what year was Einstein born?;MATCH (p:Person) WHERE p.name CONTAINS 'Einstein' OPTIONAL MATCH (p)-[r:BORN_IN]->() RETURN coalesce(toString(p.birth_year), toString(r.year), 'This information is not in the knowledge base.') AS ground_truth LIMIT 1
+In what year did Einstein die?;MATCH (p:Person) WHERE p.name CONTAINS 'Einstein' RETURN coalesce(toString(p.death_year), 'This information is not in the knowledge base.') AS ground_truth
+What award did Einstein receive?;MATCH (p:Person)-[r:RECEIVED_AWARD]->(a:Award) WHERE p.name CONTAINS 'Einstein' RETURN a.name AS ground_truth
+Why did Einstein receive the Nobel Prize?;RETURN 'Einstein received the Nobel Prize for his explanation of the photoelectric effect.' AS ground_truth
+In what year did Einstein receive the Nobel Prize?;MATCH (p:Person)-[r:RECEIVED_AWARD]->(a:Award) WHERE p.name CONTAINS 'Einstein' RETURN coalesce(toString(r.year), 'This information is not in the knowledge base.') AS ground_truth
+Which institutions did Einstein work at?;MATCH (p:Person)-[r:WORKED_AT]->(i:Institution) WHERE p.name CONTAINS 'Einstein' RETURN i.name + CASE WHEN r.from_year IS NOT NULL THEN ' (' + toString(r.from_year) + '-' + coalesce(toString(r.to_year), '?') + ')' ELSE '' END AS ground_truth ORDER BY r.from_year
+Where did Einstein work from 1902 to 1909?;MATCH (p:Person)-[r:WORKED_AT]->(i:Institution) WHERE p.name CONTAINS 'Einstein' AND r.from_year = 1902 RETURN i.name AS ground_truth
+What is the description of the Institute for Advanced Study?;MATCH (i:Institution) WHERE i.name CONTAINS 'Advanced Study' RETURN coalesce(i.summary, i.description[0], 'This information is not in the knowledge base.') AS ground_truth
+What role did Einstein hold at the Swiss Patent Office?;MATCH (p:Person)-[r:WORKED_AT]->(i:Institution) WHERE p.name CONTAINS 'Einstein' AND i.name CONTAINS 'Patent' RETURN coalesce(r.role, 'This information is not in the knowledge base.') AS ground_truth
+What theories did Einstein develop?;MATCH (p:Person)-[r:DEVELOPED]->(t:ScientificTheory) WHERE p.name CONTAINS 'Einstein' RETURN t.name + CASE WHEN r.year IS NOT NULL THEN ' (' + toString(r.year) + ')' ELSE '' END AS ground_truth ORDER BY r.year
+In what year was the theory of general relativity published?;RETURN '1915' AS ground_truth
+What is the domain of special relativity?;MATCH (t:ScientificTheory) WHERE toLower(t.name) CONTAINS 'special relativity' RETURN coalesce(t.domain, 'This information is not in the knowledge base.') AS ground_truth LIMIT 1
+What scientific fields did Einstein contribute to?;MATCH (p:Person)-[:CONTRIBUTED_TO]->(f:ScientificField) WHERE p.name CONTAINS 'Einstein' RETURN f.name AS ground_truth ORDER BY f.name
+Where did Einstein live after leaving Germany?;MATCH (p:Person)-[r:LIVED_IN]->(l:Location) WHERE p.name CONTAINS 'Einstein' RETURN l.name + CASE WHEN r.from_year IS NOT NULL THEN ' (from ' + toString(r.from_year) + ')' ELSE '' END AS ground_truth ORDER BY r.from_year
+In which city in the United States did Einstein settle?;MATCH (p:Person)-[r:LIVED_IN]->(l:Location) WHERE p.name CONTAINS 'Einstein' AND (toLower(coalesce(l.country,'')) CONTAINS 'united states' OR l.name CONTAINS 'Princeton') RETURN l.name AS ground_truth
+Which Person nodes are connected to Princeton?;MATCH (p:Person)-[:LIVED_IN|WORKED_AT]->(n) WHERE toLower(n.name) CONTAINS 'princeton' RETURN DISTINCT p.name AS ground_truth
+What papers did Einstein publish while at the Swiss Patent Office?;MATCH (p:Person)-[r:PUBLISHED]->(pub:Publication) WHERE p.name CONTAINS 'Einstein' AND r.while_at CONTAINS 'Patent' RETURN pub.title + CASE WHEN r.year IS NOT NULL THEN ' (' + toString(r.year) + ')' ELSE '' END AS ground_truth ORDER BY r.year
+List all publications by Einstein in the graph;MATCH (p:Person)-[r:PUBLISHED]->(pub:Publication) WHERE p.name CONTAINS 'Einstein' RETURN pub.title + CASE WHEN pub.year IS NOT NULL THEN ' (' + toString(pub.year) + ')' ELSE '' END AS ground_truth ORDER BY pub.year
+List all Location nodes in the graph;MATCH (l:Location) RETURN l.name AS ground_truth ORDER BY l.name
+How many Person nodes are in the graph?;MATCH (p:Person) RETURN toString(count(p)) + ' person(s)' AS ground_truth
+How many Institution nodes are in the graph?;MATCH (i:Institution) RETURN toString(count(i)) + ' institution(s)' AS ground_truth
+How many ScientificTheory nodes are in the graph?;MATCH (t:ScientificTheory) RETURN toString(count(t)) + ' theory/theories' AS ground_truth
+How many Award nodes are in the graph?;MATCH (a:Award) RETURN toString(count(a)) + ' award(s)' AS ground_truth
+How many Location nodes are in the graph?;MATCH (l:Location) RETURN toString(count(l)) + ' location(s)' AS ground_truth
+How many typed relationships exist in the graph?;MATCH ()-[r]->() WHERE type(r) IN ['BORN_IN','WORKED_AT','LIVED_IN','DEVELOPED','PUBLISHED','RECEIVED_AWARD','CONTRIBUTED_TO'] RETURN toString(count(r)) + ' relationship(s)' AS ground_truth

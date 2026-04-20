@@ -1,4 +1,4 @@
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 
 from graphrag.config import get_settings
 from graphrag.graph.neo4j_manager import Neo4jManager
@@ -22,7 +22,7 @@ class FullTextRetriever:
         except Exception as e:
             print(f"Índice fulltext ya existe o error: {e}")
 
-    def retrieve(self, query: str, top_k: int = None) -> List[Dict[str, Any]]:
+    def retrieve(self, query: str, top_k: Optional[int] = 2) -> List[Dict[str, Any]]:
         """
         Recupera chunks usando búsqueda vectorial pura de texto completo.
         """

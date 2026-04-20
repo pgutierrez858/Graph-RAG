@@ -1,1 +1,12 @@
 notebooks/.env
+
+# Python cache
+__pycache__/
+**/__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+
+# Evaluation results
+data/evaluation_results_*.csv

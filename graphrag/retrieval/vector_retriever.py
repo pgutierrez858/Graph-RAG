@@ -1,4 +1,4 @@
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 from ..graph.neo4j_manager import Neo4jManager
 from ..utils.embeddings import EmbeddingGenerator
 from ..config import get_settings
@@ -10,7 +10,7 @@ class VectorRetriever:
         self.embedding_gen = EmbeddingGenerator()
         self.settings = get_settings()
 
-    def retrieve(self, query: str, top_k: int = None) -> List[Dict[str, Any]]:
+    def retrieve(self, query: str, top_k: Optional[int] = 2) -> List[Dict[str, Any]]:
         """
         Recupera chunks relevantes usando búsqueda vectorial.
         """
@@ -36,7 +36,7 @@ class VectorRetriever:
 
         return results
 
-    def retrieve_with_entities(self, query: str, top_k: int = None) -> List[Dict[str, Any]]:
+    def retrieve_with_entities(self, query: str, top_k: Optional[int] = 2) -> List[Dict[str, Any]]:
         """
         Recupera chunks relevantes junto con sus entidades.
         """
@@ -86,7 +86,7 @@ class HybridRetriever:
         except Exception as e:
             print(f"Índice fulltext ya existe o error: {e}")
 
-    def retrieve(self, query: str, top_k: int = None) -> List[Dict[str, Any]]:
+    def retrieve(self, query: str, top_k: Optional[int] = 2) -> List[Dict[str, Any]]:
         """
         Recupera chunks usando búsqueda híbrida (vectorial + texto completo).
         """
@@ -94,7 +94,7 @@ class HybridRetriever:
         query_embedding = self.embedding_gen.embed_text(query)
 
         cypher_query = """
-        CALL {
+        CALL () {
             // Vector search
             CALL db.index.vector.queryNodes('chunk_embeddings', $top_k, $query_embedding)
             YIELD node, score

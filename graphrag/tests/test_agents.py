@@ -3,6 +3,8 @@ from graphrag.graph.neo4j_manager import Neo4jManager
 from graphrag.agents import AgenticRAG
 from graphrag.ingestion.text_processor import TextProcessor
 
+pytestmark = pytest.mark.integration
+
 
 @pytest.fixture
 def setup_agentic_system():
